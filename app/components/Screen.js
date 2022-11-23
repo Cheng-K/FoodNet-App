@@ -9,13 +9,16 @@ function Screen({
 	onLayout,
 	statusBarStyle = "dark",
 	statusBarColor = colors.primary_white,
+	statusBarHidden = false,
+	style,
 }) {
 	return (
-		<SafeAreaView onLayout={onLayout} style={styles.root}>
+		<SafeAreaView onLayout={onLayout} style={[styles.root, style]}>
 			{children}
 			<StatusBar
 				style={statusBarStyle}
 				backgroundColor={statusBarColor}
+				hidden={statusBarHidden}
 			/>
 		</SafeAreaView>
 	);
