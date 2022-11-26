@@ -1,39 +1,19 @@
+import React, { useCallback, useEffect, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-react-native";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { Button, Modal, StyleSheet, Text, View } from "react-native";
 
-import NavigationBar from "../components/NavigationBar";
+import colors from "../config/colors";
 import NutritionCards from "../components/NutritionCards";
 import Screen from "../components/Screen";
-import colors from "../config/colors";
 
 function HomeScreen() {
 	const [appIsReady, setAppIsReady] = useState(false);
-	const [scanModalVisible, toggleScanModalVisibility] = useReducer(
-		(scanModalVisible) => !scanModalVisible,
-		false
-	);
-	const [homeIsSelected, setHomeIsSelected] = useState(true);
-	const [statsIsSelected, setStatsIsSelected] = useState(false);
-	const [currentSelected, changeCurrentSelected] = useReducer(
-		(currentSelected, newSelected) => {
-			if (newSelected === "home") {
-				setHomeIsSelected(true);
-				setStatsIsSelected(false);
-			} else if (newSelected === "stats") {
-				setStatsIsSelected(true);
-				setHomeIsSelected(false);
-			}
-		},
-		"home"
-	);
-
 	useEffect(() => {
 		async function prepareApp() {
 			try {
-				await tf.ready();
+				await Promise.all([tf.ready()]);
 			} catch (e) {
 				console.warn(e);
 			} finally {
@@ -50,7 +30,6 @@ function HomeScreen() {
 	}, [appIsReady]);
 
 	if (!appIsReady) return null;
-
 	return (
 		<Screen
 			onLayout={onLayoutRootView}
@@ -76,43 +55,6 @@ function HomeScreen() {
 					<NutritionCards name="Protein" value="200g" />
 					<NutritionCards name="Fat" value="69g" />
 				</View>
-				<NavigationBar
-					style={styles.navigation_bar}
-					isHomeSelected={homeIsSelected}
-					isStatsSelected={statsIsSelected}
-					onHomeSelect={() => changeCurrentSelected("home")}
-					onStatsSelect={() => changeCurrentSelected("stats")}
-					onCameraSelect={toggleScanModalVisibility}
-				/>
-				<Modal
-					visible={scanModalVisible}
-					animationType="slide"
-					transparent
-				>
-					<View style={styles.scan_modal_container}>
-						<View style={styles.scan_modal}>
-							<View style={styles.scan_modal_btn}>
-								<Button
-									color={colors.secondary_cinnamon}
-									title="Scan with camera"
-								/>
-							</View>
-							<View style={styles.scan_modal_btn}>
-								<Button
-									color={colors.secondary_cinnamon}
-									title="Choose from gallery"
-								/>
-							</View>
-							<View style={styles.scan_modal_btn}>
-								<Button
-									color={colors.accent_red}
-									title="Close"
-									onPress={toggleScanModalVisibility}
-								/>
-							</View>
-						</View>
-					</View>
-				</Modal>
 			</View>
 		</Screen>
 	);
@@ -139,26 +81,6 @@ const styles = StyleSheet.create({
 		fontWeight: "500",
 		alignSelf: "center",
 		marginBottom: 15,
-	},
-	scan_modal: {
-		width: "100%",
-		height: "30%",
-		backgroundColor: colors.primary_white,
-		borderRadius: 15,
-		justifyContent: "space-around",
-		padding: 15,
-	},
-	scan_modal_btn: {
-		marginTop: 20,
-	},
-	scan_modal_container: {
-		flex: 1,
-		justifyContent: "flex-end",
-		alignItems: "center",
-		backgroundColor: "rgba(0,0,0,0.8)",
-	},
-	navigation_bar: {
-		marginTop: "auto",
 	},
 	nutrition_panel: {
 		flexDirection: "row",

@@ -2,9 +2,17 @@ import React from "react";
 import { StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 import colors from "../config/colors";
 
-function NavigationButton({ highlighted, icon, main, name, onSelect, style }) {
+function NavigationButton({
+	highlighted,
+	icon,
+	main,
+	name,
+	onSelect,
+	onLongPress,
+	style,
+}) {
 	return (
-		<TouchableWithoutFeedback onPress={onSelect}>
+		<TouchableWithoutFeedback onPress={onSelect} onLongPress={onLongPress}>
 			<View style={[styles.root, style]}>
 				<View style={main ? styles.circle : {}}>{icon}</View>
 				<Text

@@ -1,8 +1,9 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+
 import colors from "../config/colors";
+import FocusAwareStatusBar from "./FocusAwareStatusBar";
 
 function Screen({
 	children,
@@ -15,10 +16,9 @@ function Screen({
 	return (
 		<SafeAreaView onLayout={onLayout} style={[styles.root, style]}>
 			{children}
-			<StatusBar
-				style={statusBarStyle}
+			<FocusAwareStatusBar
 				backgroundColor={statusBarColor}
-				hidden={statusBarHidden}
+				style={statusBarStyle}
 			/>
 		</SafeAreaView>
 	);

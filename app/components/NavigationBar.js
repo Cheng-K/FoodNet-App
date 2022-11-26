@@ -6,12 +6,12 @@ import colors from "../config/colors";
 import NavigationButton from "./NavigationButton";
 
 function NavigationBar({
-	style,
 	isHomeSelected,
 	isStatsSelected,
 	onHomeSelect,
 	onStatsSelect,
 	onCameraSelect,
+	style,
 }) {
 	return (
 		<View style={[styles.root, style]}>
@@ -72,6 +72,8 @@ const styles = StyleSheet.create({
 		height: "10%",
 		flexDirection: "row",
 		justifyContent: "center",
+		backgroundColor: colors.primary_white,
+		padding: 10,
 	},
 });
 
