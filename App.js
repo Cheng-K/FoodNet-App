@@ -1,16 +1,19 @@
+import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { NavigationContainer } from "@react-navigation/native";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View, Text } from "react-native";
+import Slider from "@react-native-community/slider";
 
 import colors from "./app/config/colors";
 import HomeScreen from "./app/screens/HomeScreen";
 import ImagePickerModal from "./app/screens/ImagePickerModal";
-import StatsScreen from "./app/screens/StatsScreen";
 import NavigationBar from "./app/components/NavigationBar";
+import ResultsScreen from "./app/screens/ResultsScreen";
+import StatsScreen from "./app/screens/StatsScreen";
 import * as SplashScreen from "expo-splash-screen";
 
-SplashScreen.preventAutoHideAsync();
+// SplashScreen.preventAutoHideAsync();
 
 const RootStack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,8 +47,12 @@ function HomeTabStack() {
 export default function App() {
   return (
     <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="Tab" component={HomeTabStack} />
+      <RootStack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Results"
+      >
+        <RootStack.Screen name="Results" component={ResultsScreen} />
+        <RootStack.Screen name="HomeStack" component={HomeTabStack} />
         <RootStack.Screen
           name="ImagePicker"
           component={ImagePickerModal}

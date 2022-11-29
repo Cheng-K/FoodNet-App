@@ -19,6 +19,7 @@ function Screen({
 			<FocusAwareStatusBar
 				backgroundColor={statusBarColor}
 				style={statusBarStyle}
+				hidden={statusBarHidden}
 			/>
 		</SafeAreaView>
 	);

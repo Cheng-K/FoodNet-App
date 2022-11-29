@@ -7,7 +7,7 @@ import colors from "../config/colors";
 function StatsScreen() {
 	setStatusBarBackgroundColor(colors.primary_white);
 	return (
-		<Screen>
+		<Screen statusBarColor={colors.primary_white}>
 			<Text>Welcome to the Statistics Screen</Text>
 		</Screen>
 	);
