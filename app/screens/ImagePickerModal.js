@@ -2,11 +2,14 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+
 import AppButton from "../components/AppButton";
 import Screen from "../components/Screen";
 import colors from "../config/colors";
+import useMountedModel from "../hooks/useMountedModel";
 
 function ImagePickerModal({ navigation }) {
+	const { setModelIsRunning } = useMountedModel();
 	return (
 		<Screen style={styles.scan_modal_container}>
 			<View style={styles.scan_modal}>
@@ -44,11 +47,23 @@ function ImagePickerModal({ navigation }) {
 								]
 							);
 						} else {
-							const image = await ImagePicker.launchCameraAsync({
-								allowsEditing: true,
-								aspect: [1, 1],
-							});
-							console.log(image);
+							try {
+								const image =
+									await ImagePicker.launchCameraAsync({
+										allowsEditing: true,
+										aspect: [1, 1],
+										base64: true,
+									});
+								if (!image.cancelled) {
+									setModelIsRunning(true);
+									navigation.navigate("Results", {
+										imageUri: image.uri,
+										imageBase64: image.base64,
+									});
+								}
+							} catch (e) {
+								console.error(e);
+							}
 						}
 					}}
 				/>
@@ -81,12 +96,23 @@ function ImagePickerModal({ navigation }) {
 								]
 							);
 						} else {
-							const image =
-								await ImagePicker.launchImageLibraryAsync({
-									allowsEditing: true,
-									aspect: [1, 1],
-								});
-							console.log(image);
+							try {
+								const image =
+									await ImagePicker.launchImageLibraryAsync({
+										allowsEditing: true,
+										aspect: [1, 1],
+										base64: true,
+									});
+								if (!image.cancelled) {
+									setModelIsRunning(true);
+									navigation.navigate("Results", {
+										imageUri: image.uri,
+										imageBase64: image.base64,
+									});
+								}
+							} catch (e) {
+								console.error(e);
+							}
 						}
 					}}
 				/>
@@ -118,14 +144,11 @@ const styles = StyleSheet.create({
 		justifyContent: "space-around",
 		padding: 15,
 	},
-	scan_modal_btn: {
-		// marginTop: 10,
-	},
 	scan_modal_container: {
 		flex: 1,
 		justifyContent: "flex-end",
 		alignItems: "center",
-		backgroundColor: "rgba(0,0,0,0.6)",
+		backgroundColor: colors.opaque_black,
 	},
 });
 

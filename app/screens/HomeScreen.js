@@ -1,38 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import * as tf from "@tensorflow/tfjs";
-import "@tensorflow/tfjs-react-native";
-import * as SplashScreen from "expo-splash-screen";
-
-import colors from "../config/colors";
 import NutritionCards from "../components/NutritionCards";
 import Screen from "../components/Screen";
+import colors from "../config/colors";
 
 function HomeScreen() {
-	const [appIsReady, setAppIsReady] = useState(false);
-	useEffect(() => {
-		async function prepareApp() {
-			try {
-				await Promise.all([tf.ready()]);
-			} catch (e) {
-				console.warn(e);
-			} finally {
-				setAppIsReady(true);
-			}
-		}
-		prepareApp();
-	}, []);
-
-	const onLayoutRootView = useCallback(async () => {
-		if (appIsReady) {
-			await SplashScreen.hideAsync();
-		}
-	}, [appIsReady]);
-
-	if (!appIsReady) return null;
 	return (
 		<Screen
-			onLayout={onLayoutRootView}
 			statusBarColor={colors.secondary_cinnamon}
 			statusBarStyle="inverted"
 		>

@@ -6,12 +6,13 @@ function AppButton({
 	color,
 	IconComponent,
 	onPress,
+	style,
 	title,
 	...props
 }) {
 	return (
 		<Pressable
-			style={[styles.root, { backgroundColor }]}
+			style={[styles.root, { backgroundColor }, style]}
 			onPress={onPress}
 			{...props}
 		>

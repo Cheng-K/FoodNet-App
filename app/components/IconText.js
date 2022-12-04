@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		height: 42,
 		width: 42,
-		marginRight: 5,
+		marginRight: 10,
 	},
 	root: {
 		flexDirection: "row",
