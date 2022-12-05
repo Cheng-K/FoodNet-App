@@ -6,6 +6,7 @@ import {
 import Slider from "@react-native-community/slider";
 import React, { useEffect, useRef, useState } from "react";
 import {
+	Alert,
 	FlatList,
 	Image,
 	Pressable,
@@ -15,6 +16,7 @@ import {
 } from "react-native";
 import * as tf from "@tensorflow/tfjs";
 import * as tf_rn from "@tensorflow/tfjs-react-native";
+import * as MediaLibrary from "expo-media-library";
 
 import AppButton from "../components/AppButton";
 import AppTextInput from "../components/AppTextInput";
@@ -253,12 +255,6 @@ function ResultsScreen({ navigation, route }) {
 	const { imageUri, imageBase64 } = route.params;
 	const [currentSelected, setSelected] = useState("Nutrition");
 	const [portion, setPortion] = useState(500);
-	const [ingredients, setIngredients] = useState([
-		"Egg",
-		"Tofu",
-		"Purple Cabbage",
-		"Green Beans",
-	]);
 	const getImageTensor = (base64ImageString) => {
 		const bytes = tf.util.encodeString(base64ImageString, "base64");
 		let imageTensor = tf_rn.decodeJpeg(bytes);
@@ -267,16 +263,97 @@ function ResultsScreen({ navigation, route }) {
 		return imageTensor;
 	};
 	const inferImage = (imageTensor) => {
-		const result = mountedModel.execute(imageTensor);
-		return result;
+		let [categoryOutput, ingredientsOutput] = mountedModel.execute(
+			imageTensor,
+			["category_output", "ingredients_output"]
+		);
+		categoryOutput = decodeCategoryPrediction(categoryOutput);
+		ingredientsOutput = decodeIngredientsPrediction(ingredientsOutput);
+		return { categoryOutput, ingredientsOutput };
 	};
 
-	const runInference = async () => {
+	const decodeCategoryPrediction = (resultTensor) => {
+		const encodedCategories = require("../assets/encoded_food_categories.json");
+		resultTensor = resultTensor.reshape([-1]);
+		let index = tf.argMax(resultTensor);
+		index = index.arraySync();
+		const categories = Object.keys(encodedCategories);
+		return categories[index].replace(/[_]/g, " ");
+	};
+
+	const decodeIngredientsPrediction = (resultTensor) => {
+		const encodedIngredients = require("../assets/encoded_ingredients.json");
+		resultTensor = resultTensor.reshape([-1]);
+		let { values, indices } = tf.topk(resultTensor, 5, true);
+		indices = indices.arraySync();
+		const ingredients = Object.keys(encodedIngredients);
+		return indices.map((i) => ingredients[i]);
+	};
+
+	const runInference = () => {
 		let imageTensor = getImageTensor(imageBase64);
 		const result = inferImage(imageTensor);
 		console.log(result);
 		setPredictedResult(result);
 		setModelIsRunning(false);
+	};
+
+	const saveImage = async (uri) => {
+		const mediaLibraryPermission =
+			await MediaLibrary.requestPermissionsAsync();
+		if (mediaLibraryPermission.accessPrivileges === "none") {
+			Alert.alert(
+				"Permisions Denied",
+				"FoodNet requires media library permissions to save images.",
+				[
+					{
+						text: "Go to Settings",
+						onPress: () => Linking.openSettings(),
+					},
+					{
+						text: "CANCEL",
+					},
+				]
+			);
+		} else {
+			try {
+				let [storageAlbum, imageAsset] = await Promise.all([
+					MediaLibrary.getAlbumAsync("foodnet"),
+					MediaLibrary.createAssetAsync(uri),
+				]);
+				if (storageAlbum == null) {
+					storageAlbum = await MediaLibrary.createAlbumAsync(
+						"foodnet",
+						imageAsset,
+						false
+					);
+				} else {
+					await MediaLibrary.addAssetsToAlbumAsync(
+						imageAsset,
+						storageAlbum,
+						false
+					);
+				}
+				const latestImage = (
+					await MediaLibrary.getAssetsAsync({
+						album: storageAlbum,
+						sortBy: "creationTime",
+						first: 1,
+					})
+				).assets[0];
+				return latestImage.uri;
+			} catch (error) {
+				Alert.alert(
+					"Something went wrong. Please try again.",
+					`${error.message}`,
+					[
+						{
+							text: "OK",
+						},
+					]
+				);
+			}
+		}
 	};
 
 	useEffect(() => {
@@ -296,7 +373,9 @@ function ResultsScreen({ navigation, route }) {
 				/>
 			</View>
 			<View style={styles.details_container}>
-				<Text style={styles.title}>Bibimbap</Text>
+				<Text style={styles.title}>
+					{predictedResult.categoryOutput}
+				</Text>
 				<ResultsNavigation
 					currentSelected={currentSelected}
 					onPress={setSelected}
@@ -308,7 +387,9 @@ function ResultsScreen({ navigation, route }) {
 					/>
 				)}
 				{currentSelected === "Ingredients" && (
-					<IngredientsDetails ingredientsList={ingredients} />
+					<IngredientsDetails
+						ingredientsList={predictedResult.ingredientsOutput}
+					/>
 				)}
 				<View style={styles.button_container}>
 					<AppButton
@@ -323,6 +404,7 @@ function ResultsScreen({ navigation, route }) {
 								color={colors.primary_white}
 							/>
 						}
+						onPress={() => saveImage(imageUri)}
 					/>
 					<AppButton
 						backgroundColor={colors.accent_red}
@@ -442,6 +524,7 @@ const styles = StyleSheet.create({
 	},
 	details_container: {
 		flex: 1,
+		marginTop: 15,
 	},
 	img: {
 		height: "100%",
@@ -455,6 +538,7 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		fontWeight: "bold",
 		fontSize: 24,
+		textTransform: "capitalize",
 	},
 });
 
