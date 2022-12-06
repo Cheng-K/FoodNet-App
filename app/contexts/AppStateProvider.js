@@ -2,8 +2,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as tf from "@tensorflow/tfjs";
 import * as tf_rn from "@tensorflow/tfjs-react-native";
 import React, { useEffect, useState } from "react";
+import { Alert } from "react-native";
 
 import storage from "../config/storage";
+import {
+	createDatabaseTables,
+	dropTable,
+	insertRecords,
+} from "../services/database";
 
 export const AppStateContext = React.createContext();
 
@@ -51,13 +57,29 @@ function AppStateProvider({ children }) {
 		}
 	};
 	useEffect(() => {
+		if (error) {
+			Alert.alert(
+				"Something went wrong. Please try again.",
+				`Troubleshoot message : ${error.message}`,
+				[
+					{
+						text: "OK",
+						onPress: () => setError(null),
+					},
+				]
+			);
+		}
+	});
+	useEffect(() => {
 		async function prepareApp() {
 			try {
+				// await dropTable();
+				await createDatabaseTables();
 				await tf.ready();
 				await prepareModel();
-			} catch (e) {
-				console.warn(e);
-				setError(e);
+			} catch (error) {
+				console.warn(error);
+				setError(error);
 			} finally {
 				setAppIsReady(true);
 			}

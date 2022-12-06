@@ -2,11 +2,25 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import colors from "../config/colors";
 
-function IconText({ IconComponent, style, title }) {
+function IconText({
+	IconComponent,
+	style,
+	title,
+	iconContainerStyle,
+	titleStyle,
+	numberOfLines = 0,
+}) {
 	return (
 		<View style={[styles.root, style]}>
-			<View style={styles.icon_container}>{IconComponent}</View>
-			<Text style={styles.title}>{title}</Text>
+			<View style={[styles.icon_container, iconContainerStyle]}>
+				{IconComponent}
+			</View>
+			<Text
+				style={[styles.title, titleStyle]}
+				numberOfLines={numberOfLines}
+			>
+				{title}
+			</Text>
 		</View>
 	);
 }

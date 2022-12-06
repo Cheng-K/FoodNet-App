@@ -4,6 +4,7 @@ import {
 	MaterialIcons,
 } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider";
+import * as MediaLibrary from "expo-media-library";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Alert,
@@ -12,11 +13,9 @@ import {
 	Pressable,
 	StyleSheet,
 	Text,
+	ToastAndroid,
 	View,
 } from "react-native";
-import * as tf from "@tensorflow/tfjs";
-import * as tf_rn from "@tensorflow/tfjs-react-native";
-import * as MediaLibrary from "expo-media-library";
 
 import AppButton from "../components/AppButton";
 import AppTextInput from "../components/AppTextInput";
@@ -24,13 +23,21 @@ import BulletText from "../components/BulletText";
 import IconText from "../components/IconText";
 import Screen from "../components/Screen";
 import colors from "../config/colors";
+import useAppState from "../hooks/useAppState";
 import useMountedModel from "../hooks/useMountedModel";
 import LoadingScreen from "./LoadingScreen";
+import { insertRecords } from "../services/database";
 
-function NutritionDetails({ portion, onPortionChange }) {
+function NutritionDetails({
+	portion,
+	setPortion,
+	portionInput,
+	setPortionInput,
+	portionInputError,
+	setPortionInputError,
+}) {
+	const { predictedResult } = useMountedModel();
 	const slider = useRef(null);
-	const [portionInput, setPortionInput] = useState(portion.toString());
-	const [portionInputError, setPortionInputError] = useState(null);
 	const isNumeric = (text) => {
 		text = text.trim();
 		const regexp = /^([0-9]*[.])?[0-9]+$/g;
@@ -52,7 +59,7 @@ function NutritionDetails({ portion, onPortionChange }) {
 					}}
 					onBlur={() => {
 						if (isNumeric(portionInput)) {
-							onPortionChange(Number(portionInput));
+							setPortion(Number(portionInput));
 							setPortionInput(Number(portionInput).toString());
 							setPortionInputError(null);
 						} else if (portionInput === "") {
@@ -114,7 +121,7 @@ function NutritionDetails({ portion, onPortionChange }) {
 					maximumValue={750}
 					minimumTrackTintColor={colors.secondary_cinnamon}
 					onValueChange={(value) => {
-						onPortionChange(value);
+						setPortion(value);
 						setPortionInput(value.toString());
 						setPortionInputError(null);
 					}}
@@ -137,7 +144,9 @@ function NutritionDetails({ portion, onPortionChange }) {
 						nutritionDetails.results,
 						nutritionDetails.results_align_left,
 					]}
-					title="100kcal"
+					title={`${(predictedResult.calorieOutput * portion).toFixed(
+						2
+					)}kcal`}
 				/>
 				<IconText
 					IconComponent={
@@ -151,7 +160,9 @@ function NutritionDetails({ portion, onPortionChange }) {
 						nutritionDetails.results,
 						nutritionDetails.results_align_right,
 					]}
-					title="100g carbs"
+					title={`${(predictedResult.carbsOutput * portion).toFixed(
+						2
+					)}g carbs`}
 				/>
 				<IconText
 					IconComponent={
@@ -165,7 +176,9 @@ function NutritionDetails({ portion, onPortionChange }) {
 						nutritionDetails.results,
 						nutritionDetails.results_align_left,
 					]}
-					title="100g protein"
+					title={`${(predictedResult.proteinOutput * portion).toFixed(
+						2
+					)}g protein`}
 				/>
 				<IconText
 					IconComponent={
@@ -179,7 +192,9 @@ function NutritionDetails({ portion, onPortionChange }) {
 						nutritionDetails.results,
 						nutritionDetails.results_align_right,
 					]}
-					title="100g fat"
+					title={`${(predictedResult.fatOutput * portion).toFixed(
+						2
+					)}g fat`}
 				/>
 			</View>
 		</View>
@@ -245,58 +260,13 @@ function ResultsNavigation({ currentSelected, onPress }) {
 }
 
 function ResultsScreen({ navigation, route }) {
-	const {
-		mountedModel,
-		modelIsRunning,
-		setModelIsRunning,
-		predictedResult,
-		setPredictedResult,
-	} = useMountedModel();
-	const { imageUri, imageBase64 } = route.params;
+	const { setError } = useAppState();
+	const { modelIsRunning, predictedResult, runInference } = useMountedModel();
 	const [currentSelected, setSelected] = useState("Nutrition");
 	const [portion, setPortion] = useState(500);
-	const getImageTensor = (base64ImageString) => {
-		const bytes = tf.util.encodeString(base64ImageString, "base64");
-		let imageTensor = tf_rn.decodeJpeg(bytes);
-		imageTensor = tf.image.resizeBilinear(imageTensor, [224, 224]);
-		imageTensor = tf.reshape(imageTensor, [-1, 224, 224, 3]);
-		return imageTensor;
-	};
-	const inferImage = (imageTensor) => {
-		let [categoryOutput, ingredientsOutput] = mountedModel.execute(
-			imageTensor,
-			["category_output", "ingredients_output"]
-		);
-		categoryOutput = decodeCategoryPrediction(categoryOutput);
-		ingredientsOutput = decodeIngredientsPrediction(ingredientsOutput);
-		return { categoryOutput, ingredientsOutput };
-	};
-
-	const decodeCategoryPrediction = (resultTensor) => {
-		const encodedCategories = require("../assets/encoded_food_categories.json");
-		resultTensor = resultTensor.reshape([-1]);
-		let index = tf.argMax(resultTensor);
-		index = index.arraySync();
-		const categories = Object.keys(encodedCategories);
-		return categories[index].replace(/[_]/g, " ");
-	};
-
-	const decodeIngredientsPrediction = (resultTensor) => {
-		const encodedIngredients = require("../assets/encoded_ingredients.json");
-		resultTensor = resultTensor.reshape([-1]);
-		let { values, indices } = tf.topk(resultTensor, 5, true);
-		indices = indices.arraySync();
-		const ingredients = Object.keys(encodedIngredients);
-		return indices.map((i) => ingredients[i]);
-	};
-
-	const runInference = () => {
-		let imageTensor = getImageTensor(imageBase64);
-		const result = inferImage(imageTensor);
-		console.log(result);
-		setPredictedResult(result);
-		setModelIsRunning(false);
-	};
+	const [portionInput, setPortionInput] = useState(portion.toString());
+	const [portionInputError, setPortionInputError] = useState(null);
+	const { imageUri, imageBase64 } = route.params;
 
 	const saveImage = async (uri) => {
 		const mediaLibraryPermission =
@@ -343,23 +313,36 @@ function ResultsScreen({ navigation, route }) {
 				).assets[0];
 				return latestImage.uri;
 			} catch (error) {
-				Alert.alert(
-					"Something went wrong. Please try again.",
-					`${error.message}`,
-					[
-						{
-							text: "OK",
-						},
-					]
-				);
+				throw error;
 			}
 		}
 	};
 
+	const onSave = async (uri) => {
+		try {
+			let imageUri = await saveImage(uri);
+			const values = {
+				file_uri: imageUri,
+				category: predictedResult.categoryOutput,
+				ingredients: predictedResult.ingredientsOutput.toString(),
+				calorie: predictedResult.calorieOutput * portion,
+				carbs: predictedResult.carbsOutput * portion,
+				protein: predictedResult.proteinOutput * portion,
+				fat: predictedResult.fatOutput * portion,
+			};
+			await insertRecords(values);
+			ToastAndroid.show("Image saved successfully", ToastAndroid.SHORT);
+			navigation.navigate("HomeStack", {
+				screen: "Home",
+				params: { newRecord: values },
+			});
+		} catch (error) {
+			setError(error);
+		}
+	};
+
 	useEffect(() => {
-		setTimeout(() => {
-			runInference();
-		}, 0);
+		setTimeout(() => runInference(imageBase64), 0);
 	}, []);
 
 	if (modelIsRunning) return <LoadingScreen />;
@@ -383,7 +366,11 @@ function ResultsScreen({ navigation, route }) {
 				{currentSelected === "Nutrition" && (
 					<NutritionDetails
 						portion={portion}
-						onPortionChange={setPortion}
+						setPortion={setPortion}
+						portionInput={portionInput}
+						setPortionInput={setPortionInput}
+						portionInputError={portionInputError}
+						setPortionInputError={setPortionInputError}
 					/>
 				)}
 				{currentSelected === "Ingredients" && (
@@ -395,6 +382,7 @@ function ResultsScreen({ navigation, route }) {
 					<AppButton
 						backgroundColor={colors.accent_green}
 						color={colors.primary_white}
+						disabled={portionInputError !== null}
 						style={styles.button}
 						title="Save"
 						IconComponent={
@@ -404,7 +392,7 @@ function ResultsScreen({ navigation, route }) {
 								color={colors.primary_white}
 							/>
 						}
-						onPress={() => saveImage(imageUri)}
+						onPress={() => onSave(imageUri)}
 					/>
 					<AppButton
 						backgroundColor={colors.accent_red}

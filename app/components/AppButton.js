@@ -12,7 +12,12 @@ function AppButton({
 }) {
 	return (
 		<Pressable
-			style={[styles.root, { backgroundColor }, style]}
+			style={[
+				styles.root,
+				{ backgroundColor },
+				style,
+				props.disabled ? styles.disabled : null,
+			]}
 			onPress={onPress}
 			{...props}
 		>
@@ -34,6 +39,9 @@ const styles = {
 		marginLeft: 10,
 		fontWeight: "500",
 		textTransform: "uppercase",
+	},
+	disabled: {
+		opacity: 0.5,
 	},
 };
 
