@@ -9,7 +9,7 @@ import {
 	createDatabaseTables,
 	dropTable,
 	insertRecords,
-} from "../services/database";
+} from "../utils/database";
 
 export const AppStateContext = React.createContext();
 
@@ -76,7 +76,7 @@ function AppStateProvider({ children }) {
 				// await dropTable();
 				await createDatabaseTables();
 				await tf.ready();
-				await prepareModel();
+				// await prepareModel();
 			} catch (error) {
 				console.warn(error);
 				setError(error);

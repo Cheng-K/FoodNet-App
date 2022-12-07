@@ -26,7 +26,7 @@ import colors from "../config/colors";
 import useAppState from "../hooks/useAppState";
 import useMountedModel from "../hooks/useMountedModel";
 import LoadingScreen from "./LoadingScreen";
-import { insertRecords } from "../services/database";
+import { insertRecords } from "../utils/database";
 
 function NutritionDetails({
 	portion,

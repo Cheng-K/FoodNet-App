@@ -82,18 +82,35 @@ export async function selectLastKRecords(k) {
 	return promise;
 }
 
-export async function selectNutrientsSumWithDateRange(start_date, end_date) {
+export async function selectEarliestDate() {
 	const promise = new Promise((resolve, reject) => {
 		db.transaction((tx) => {
 			tx.executeSql(
 				`
-				SELECT sum(calorie) AS sum_calorie, sum(carbs) AS sum_carbs, sum(protein) AS sum_protein, sum(fat) AS sum_fat, date_created
-				FROM Records WHERE unixepoch(date_created) 
-				BETWEEN unixepoch(?) AND unixepoch(?)
-				GROUP BY date_created
+				SELECT date(date_created,'localtime') AS date
+				FROM Records
 				ORDER BY date_created ASC
+				LIMIT 1`,
+				[],
+				(txObj, resultSet) => resolve(resultSet),
+				(txObj, errorObj) => reject(errorObj)
+			);
+		});
+	});
+	return promise;
+}
+
+export async function selectNutrientsOnDate(date) {
+	const promise = new Promise((resolve, reject) => {
+		db.transaction((tx) => {
+			tx.executeSql(
+				`
+				SELECT calorie,carbs,protein,fat, strftime('%s',time_created) AS time
+				FROM Records 
+				WHERE strftime('%s',date_created) = strftime('%s',?)
+				ORDER BY time_created ASC
 				`,
-				[start_date, end_date],
+				[date],
 				(txObj, resultSet) => resolve(resultSet),
 				(txObj, errorObj) => reject(errorObj)
 			);

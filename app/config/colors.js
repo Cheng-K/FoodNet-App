@@ -6,4 +6,5 @@ export default {
 	accent_green: "#7a9000",
 	accent_red: "#ed4b60",
 	opaque_black: "rgba(0,0,0,0.6)",
+	pure_white: "#ffffff",
 };

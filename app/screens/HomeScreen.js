@@ -10,7 +10,7 @@ import useAppState from "../hooks/useAppState";
 import {
 	selectLastKRecords,
 	selectNutrientsSumFromToday,
-} from "../services/database";
+} from "../utils/database";
 
 function HomeScreen({ route }) {
 	const { setError } = useAppState();
