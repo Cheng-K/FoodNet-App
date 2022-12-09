@@ -31,6 +31,7 @@
     "react": "18.0.0",
     "react-dom": "18.0.0",
     "react-native": "0.69.6",
+    "react-native-element-dropdown": "^2.5.0",
     "react-native-fs": "2.14.1",
     "react-native-gesture-handler": "~2.5.0",
     "react-native-gifted-charts": "1.2.41",

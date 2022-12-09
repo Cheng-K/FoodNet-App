@@ -13,9 +13,8 @@ export async function createDatabaseTables() {
 					calorie REAL NOT NULL, 
 					carbs REAL NOT NULL, 
 					protein REAL NOT NULL, 
-					fat REAL NOT NULL, 
-					date_created TEXT NOT NULL DEFAULT CURRENT_DATE , 
-					time_created TEXT NOT NULL DEFAULT CURRENT_TIME
+					fat REAL NOT NULL,  
+					time_created TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 				)`,
 				null,
 				(txObj, resultSet) => resolve(resultSet),
@@ -41,7 +40,6 @@ export async function dropTable() {
 }
 
 export async function insertRecords(record) {
-	console.log(record);
 	const promise = new Promise((resolve, reject) => {
 		db.transaction((tx) => {
 			tx.executeSql(
@@ -70,10 +68,29 @@ export async function selectLastKRecords(k) {
 		db.transaction((tx) => {
 			tx.executeSql(
 				`
-				SELECT file_uri,category,ingredients,calorie,carbs,protein,fat, date(date_created,'localtime') AS date, time(time_created,'localtime') AS time FROM Records
-				ORDER BY date_created DESC, time_created DESC
+				SELECT file_uri,category,ingredients,calorie,carbs,protein,fat, date(time_created,'localtime') AS date, time(time_created,'localtime') AS time 
+				FROM Records
+				ORDER BY time_created DESC
 				LIMIT ?`,
 				[k],
+				(txObj, resultSet) => resolve(resultSet),
+				(txObj, errorObj) => reject(errorObj)
+			);
+		});
+	});
+	return promise;
+}
+
+export async function selectRecordsOnDate(date) {
+	const promise = new Promise((resolve, reject) => {
+		db.transaction((tx) => {
+			tx.executeSql(
+				`
+				SELECT file_uri,category,ingredients,calorie,carbs,protein,fat, date(time_created,'localtime') AS date, time(time_created,'localtime') AS time 
+				FROM Records
+				WHERE strftime('%s',date(time_created,'localtime')) = strftime('%s',?)
+				ORDER BY time_created ASC`,
+				[date],
 				(txObj, resultSet) => resolve(resultSet),
 				(txObj, errorObj) => reject(errorObj)
 			);
@@ -87,9 +104,9 @@ export async function selectEarliestDate() {
 		db.transaction((tx) => {
 			tx.executeSql(
 				`
-				SELECT date(date_created,'localtime') AS date
+				SELECT date(time_created,'localtime') AS date
 				FROM Records
-				ORDER BY date_created ASC
+				ORDER BY time_created ASC
 				LIMIT 1`,
 				[],
 				(txObj, resultSet) => resolve(resultSet),
@@ -100,17 +117,20 @@ export async function selectEarliestDate() {
 	return promise;
 }
 
-export async function selectNutrientsOnDate(date) {
+export async function selectNutrientsSumBetweenDates(startDate, endDate) {
 	const promise = new Promise((resolve, reject) => {
 		db.transaction((tx) => {
 			tx.executeSql(
 				`
-				SELECT calorie,carbs,protein,fat, strftime('%s',time_created) AS time
+				SELECT sum(calorie) AS sum_calorie, sum(carbs) AS sum_carbs, sum(protein) AS sum_protein, 
+				sum(fat) AS sum_fat, date(time_created,'localtime') AS date
 				FROM Records 
-				WHERE strftime('%s',date_created) = strftime('%s',?)
-				ORDER BY time_created ASC
+				WHERE strftime('%s',date(time_created,'localtime')) 
+				BETWEEN strftime('%s',?) AND strftime('%s',?)
+				GROUP BY date(time_created,'localtime')
+				ORDER BY date(time_created,'localtime') ASC
 				`,
-				[date],
+				[startDate, endDate],
 				(txObj, resultSet) => resolve(resultSet),
 				(txObj, errorObj) => reject(errorObj)
 			);
@@ -119,35 +139,16 @@ export async function selectNutrientsOnDate(date) {
 	return promise;
 }
 
-export async function selectNutrientsFromToday(offset) {
-	const promise = new Promise((resolve, reject) => {
-		db.transaction((tx) => {
-			tx.executeSql(
-				`
-				SELECT calorie, carbs, protein, fat,
-				FROM Records 
-				WHERE unixepoch(date_created) = unixepoch('now','? day')
-				ORDER BY time_created ASC
-				`,
-				[offset],
-				(txObj, resultSet) => resolve(resultSet),
-				(txObj, errorObj) => reject(errorObj)
-			);
-		});
-	});
-	return promise;
-}
-
-export async function selectNutrientsSumFromToday(offset) {
+export async function selectNutrientsSumOnDate(date) {
 	const promise = new Promise((resolve, reject) => {
 		db.transaction((tx) => {
 			tx.executeSql(
 				`
 				SELECT sum(calorie) AS sum_calorie, sum(carbs) AS sum_carbs, sum(protein) AS sum_protein, sum(fat) AS sum_fat
 				FROM Records 
-				WHERE strftime('%s',date_created,'localtime') = strftime('%s',date('now',?),'localtime')
+				WHERE strftime('%s',date(time_created,'localtime')) = strftime('%s',?)
 				`,
-				[`${offset} days`],
+				[date],
 				(txObj, resultSet) => resolve(resultSet),
 				(txObj, errorObj) => reject(errorObj)
 			);

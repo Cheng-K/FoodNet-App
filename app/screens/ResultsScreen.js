@@ -260,7 +260,7 @@ function ResultsNavigation({ currentSelected, onPress }) {
 }
 
 function ResultsScreen({ navigation, route }) {
-	const { setError } = useAppState();
+	const { setError, setStorageLastUpdated } = useAppState();
 	const { modelIsRunning, predictedResult, runInference } = useMountedModel();
 	const [currentSelected, setSelected] = useState("Nutrition");
 	const [portion, setPortion] = useState(500);
@@ -331,11 +331,9 @@ function ResultsScreen({ navigation, route }) {
 				fat: predictedResult.fatOutput * portion,
 			};
 			await insertRecords(values);
+			setStorageLastUpdated(new Date());
 			ToastAndroid.show("Image saved successfully", ToastAndroid.SHORT);
-			navigation.navigate("HomeStack", {
-				screen: "Home",
-				params: { newRecord: values },
-			});
+			navigation.navigate("HomeStack");
 		} catch (error) {
 			setError(error);
 		}

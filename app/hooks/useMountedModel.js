@@ -72,7 +72,6 @@ function useMountedModel() {
 	const decodeNutrientsPrediction = (resultTensor) => {
 		resultTensor = resultTensor.reshape([-1]);
 		let value = resultTensor.arraySync();
-		console.log(value);
 		return value[0];
 	};
 

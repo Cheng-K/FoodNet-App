@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import ListItemSeparator from "../components/ListItemSeparator";
@@ -9,45 +9,17 @@ import colors from "../config/colors";
 import useAppState from "../hooks/useAppState";
 import {
 	selectLastKRecords,
-	selectNutrientsSumFromToday,
+	selectNutrientsSumOnDate,
 } from "../utils/database";
+import { dateToString } from "../utils/datetime";
 
-function HomeScreen({ route }) {
-	const { setError } = useAppState();
+function HomeScreen() {
+	const { storageLastUpdated, setError } = useAppState();
 	const [recentIntakeList, setRecentIntakeList] = useState([]);
 	const [todayNutrients, setTodayNutrients] = useState([]);
-	const [flatListRerender, triggerFlatListRerender] = useReducer(
-		(flatListRerender) => !flatListRerender,
-		false
-	);
-	const updateIntakeList = async (newRecord) => {
-		if (!newRecord) return;
-		const newIntakeList = recentIntakeList;
-		if (newIntakeList.length === 5) {
-			newIntakeList.pop();
-		}
-		try {
-			let result = await selectLastKRecords(1);
-			console.log(result.rows._array);
-			newIntakeList.unshift(result.rows._array[0]);
-			setRecentIntakeList(newIntakeList);
-			triggerFlatListRerender();
-		} catch (error) {
-			setError(error);
-		}
-	};
-	const updateTodayNutrients = (newRecord) => {
-		if (!newRecord) return;
-		const newTodayNutrients = { ...todayNutrients };
-		newTodayNutrients.calorie += newRecord.calorie;
-		newTodayNutrients.carbs += newRecord.carbs;
-		newTodayNutrients.protein += newRecord.protein;
-		newTodayNutrients.fat += newRecord.fat;
-		setTodayNutrients(newTodayNutrients);
-	};
 	const fetchRecentIntake = async () => {
 		try {
-			let result = await selectLastKRecords(5);
+			let result = await selectLastKRecords(3);
 			console.log(result.rows._array);
 			setRecentIntakeList(result.rows._array);
 		} catch (error) {
@@ -56,8 +28,8 @@ function HomeScreen({ route }) {
 	};
 	const fetchTodayNutrient = async () => {
 		try {
-			let result = await selectNutrientsSumFromToday(0);
-			console.log(result.rows._array);
+			let date = dateToString(new Date());
+			let result = await selectNutrientsSumOnDate(date);
 			let value = result.rows._array[0];
 			value = {
 				calorie: value.sum_calorie ? value.sum_calorie : 0,
@@ -65,7 +37,6 @@ function HomeScreen({ route }) {
 				protein: value.sum_protein ? value.sum_protein : 0,
 				fat: value.sum_fat ? value.sum_fat : 0,
 			};
-			console.log(typeof value.calorie);
 			setTodayNutrients(value);
 		} catch (error) {
 			setError(error);
@@ -74,12 +45,8 @@ function HomeScreen({ route }) {
 	useEffect(() => {
 		fetchRecentIntake();
 		fetchTodayNutrient();
-	}, []);
-	useEffect(() => {
-		console.log("update");
-		updateIntakeList(route.params?.newRecord);
-		updateTodayNutrients(route.params?.newRecord);
-	}, [route.params?.newRecord]);
+	}, [storageLastUpdated]);
+
 	return (
 		<Screen
 			statusBarColor={colors.secondary_cinnamon}
@@ -113,16 +80,23 @@ function HomeScreen({ route }) {
 					/>
 				</View>
 				<View style={styles.flex_container}>
-					<Text style={[styles.h1, styles.h1_top_margin]}>
-						Recent Intake
-					</Text>
 					<FlatList
 						contentContainerStyle={{ flexGrow: 1 }}
 						data={recentIntakeList}
-						extraData={flatListRerender}
 						renderItem={({ item }) => {
 							return <RecentItem item={{ ...item }} />;
 						}}
+						ListHeaderComponent={
+							<Text
+								style={[
+									styles.h1,
+									styles.h1_top_margin,
+									styles.sticky_h1,
+								]}
+							>
+								Recent Intake
+							</Text>
+						}
 						ListEmptyComponent={ListEmptyComponent}
 						ItemSeparatorComponent={ListItemSeparator}
 					/>

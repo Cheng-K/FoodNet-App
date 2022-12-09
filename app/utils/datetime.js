@@ -1,5 +1,12 @@
-export function formatString(dateString) {
+export function stringToDate(dateString) {
 	return new Date(dateString);
+}
+
+export function stringToTime(timeString) {
+	const [hour, minute, second] = timeString.split(":");
+	let date = new Date();
+	date.setHours(parseInt(hour), parseInt(minute), parseInt(second));
+	return date;
 }
 
 export function dateToString(date, option = 1) {
@@ -44,7 +51,7 @@ export function dateToString(date, option = 1) {
 		let month = monthName[date.getMonth()];
 		let day = dayOfWeek[date.getDay()];
 		let currentDate = date.getDate();
-		return `${day}, ${currentDate} ${month} ${year}`;
+		return `${currentDate} ${month} ${year}`;
 	}
 }
 
@@ -64,4 +71,31 @@ export function generateDatesBetween(startDate, endDate) {
 		);
 	}
 	return dates;
+}
+
+export function generateWeeklyDatesBetween(startDate, endDate) {
+	const dates = [];
+	let currentDate = new Date(
+		startDate.getFullYear(),
+		startDate.getMonth(),
+		startDate.getDate()
+	);
+	while (currentDate <= endDate) {
+		dates.push(currentDate);
+		currentDate = new Date(
+			currentDate.getFullYear(),
+			currentDate.getMonth(),
+			currentDate.getDate() + 7
+		);
+	}
+	return dates;
+}
+
+export function getStartOfWeek(date) {
+	let startDate = new Date(
+		date.getFullYear(),
+		date.getMonth(),
+		date.getDate() - date.getDay()
+	);
+	return startDate;
 }

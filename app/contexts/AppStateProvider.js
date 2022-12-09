@@ -19,6 +19,7 @@ function AppStateProvider({ children }) {
 	const [modelIsRunning, setModelIsRunning] = useState(true);
 	const [mountedModel, setMountedModel] = useState(null);
 	const [predictedResult, setPredictedResult] = useState(null);
+	const [storageLastUpdated, setStorageLastUpdated] = useState(null);
 
 	const fetchLatestModelVersion = async () => {
 		return tf_rn
@@ -39,8 +40,6 @@ function AppStateProvider({ children }) {
 		try {
 			latestModelVersion = await latestModelVersion;
 			currentModelVersion = await currentModelVersion;
-			console.log(latestModelVersion);
-			console.log(currentModelVersion);
 			if (latestModelVersion !== currentModelVersion) {
 				console.log(
 					`latest : ${latestModelVersion}, current : ${currentModelVersion}`
@@ -76,7 +75,7 @@ function AppStateProvider({ children }) {
 				// await dropTable();
 				await createDatabaseTables();
 				await tf.ready();
-				// await prepareModel();
+				await prepareModel();
 			} catch (error) {
 				console.warn(error);
 				setError(error);
@@ -99,6 +98,8 @@ function AppStateProvider({ children }) {
 				mountedModel,
 				predictedResult,
 				setPredictedResult,
+				storageLastUpdated,
+				setStorageLastUpdated,
 			}}
 		>
 			{children}
