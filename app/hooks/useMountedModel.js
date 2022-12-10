@@ -72,7 +72,7 @@ function useMountedModel() {
 	const decodeNutrientsPrediction = (resultTensor) => {
 		resultTensor = resultTensor.reshape([-1]);
 		let value = resultTensor.arraySync();
-		return value[0];
+		return Math.abs(value[0]);
 	};
 
 	const runInference = (imageBase64) => {

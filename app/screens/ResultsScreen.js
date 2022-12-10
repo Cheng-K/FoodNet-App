@@ -1,10 +1,3 @@
-import {
-	FontAwesome5,
-	MaterialCommunityIcons,
-	MaterialIcons,
-} from "@expo/vector-icons";
-import Slider from "@react-native-community/slider";
-import * as MediaLibrary from "expo-media-library";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Alert,
@@ -16,16 +9,23 @@ import {
 	ToastAndroid,
 	View,
 } from "react-native";
+import {
+	FontAwesome5,
+	MaterialCommunityIcons,
+	MaterialIcons,
+} from "@expo/vector-icons";
+import Slider from "@react-native-community/slider";
+import * as MediaLibrary from "expo-media-library";
 
 import AppButton from "../components/AppButton";
 import AppTextInput from "../components/AppTextInput";
 import BulletText from "../components/BulletText";
-import IconText from "../components/IconText";
-import Screen from "../components/Screen";
 import colors from "../config/colors";
+import IconText from "../components/IconText";
+import LoadingScreen from "./LoadingScreen";
+import Screen from "../components/Screen";
 import useAppState from "../hooks/useAppState";
 import useMountedModel from "../hooks/useMountedModel";
-import LoadingScreen from "./LoadingScreen";
 import { insertRecords } from "../utils/database";
 
 function NutritionDetails({
@@ -335,7 +335,12 @@ function ResultsScreen({ navigation, route }) {
 			ToastAndroid.show("Image saved successfully", ToastAndroid.SHORT);
 			navigation.navigate("HomeStack");
 		} catch (error) {
-			setError(error);
+			setError(
+				new Error(
+					"Unable to save image. This could be due to user not granting permission to modify the image / database error.",
+					{ cause: error }
+				)
+			);
 		}
 	};
 

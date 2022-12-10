@@ -1,15 +1,29 @@
+import React, { useEffect } from "react";
+import { Alert, StyleSheet, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import React from "react";
-import { Alert, StyleSheet, View } from "react-native";
 
 import AppButton from "../components/AppButton";
-import Screen from "../components/Screen";
 import colors from "../config/colors";
+import Screen from "../components/Screen";
 import useMountedModel from "../hooks/useMountedModel";
 
 function ImagePickerModal({ navigation }) {
-	const { setModelIsRunning } = useMountedModel();
+	const { mountedModel, setModelIsRunning } = useMountedModel();
+	useEffect(() => {
+		if (!mountedModel) {
+			Alert.alert(
+				"Model not found.",
+				"The required component for analyzing food images is not found. Please restart the application with stable internet connection.",
+				[
+					{
+						text: "Back to Home",
+						onPress: () => navigation.navigate("HomeStack"),
+					},
+				]
+			);
+		}
+	});
 	return (
 		<Screen style={styles.scan_modal_container}>
 			<View style={styles.scan_modal}>

@@ -1,26 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
+import { FlatList, StyleSheet, Text, View } from "react-native";
+
+import colors from "../config/colors";
 import DatePickerOption from "../components/DatePickerOption";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import ListItemSeparator from "../components/ListItemSeparator";
 import RecentItem from "../components/RecentItem";
 import Screen from "../components/Screen";
 import WeeklyNutrientsChart from "../components/WeeklyNutrientsChart";
-import colors from "../config/colors";
 import useAppState from "../hooks/useAppState";
-import { parseWeeklyNutrientsSum } from "../utils/charts";
-import {
-	selectEarliestDate,
-	selectNutrientsSumBetweenDates,
-	selectRecordsOnDate,
-} from "../utils/database";
 import {
 	dateToString,
 	generateDatesBetween,
 	generateWeeklyDatesBetween,
 	getStartOfWeek,
 } from "../utils/datetime";
+import { parseWeeklyNutrientsSum } from "../utils/charts";
+import {
+	selectEarliestDate,
+	selectNutrientsSumBetweenDates,
+	selectRecordsOnDate,
+} from "../utils/database";
 
 function StatsScreen() {
 	const nutrientsDropdown = [
@@ -45,10 +46,9 @@ function StatsScreen() {
 		selectEarliestDate()
 			.then((result) => {
 				let currentDate = Date.now();
-				// let startDate = result.rows._array
-				// 	? stringToDate(result.rows._array[0].date)
-				// 	: currentDate;
-				let startDate = new Date(2022, 10, 1);
+				let startDate = result.rows._array
+					? stringToDate(result.rows._array[0].date)
+					: currentDate;
 				startDate = getStartOfWeek(startDate);
 				let range = generateWeeklyDatesBetween(startDate, currentDate);
 				range = range.map((item) => {
@@ -58,7 +58,12 @@ function StatsScreen() {
 				setSelectedWeek(range[range.length - 1]);
 			})
 			.catch((error) => {
-				setError(error);
+				setError(
+					new Error(
+						"SQLite Error : Unable to retrieve the earliest date.",
+						{ cause: error }
+					)
+				);
 			});
 	}, []);
 	useEffect(() => {
@@ -85,7 +90,12 @@ function StatsScreen() {
 				setWeeklyData(weeklyNutrientsSum);
 			})
 			.catch((error) => {
-				setError(error);
+				setError(
+					new Error(
+						"SQLite Error : Unable to retrieve the data for nutritions.",
+						{ cause: error }
+					)
+				);
 			});
 	}, [selectedWeek]);
 
@@ -97,7 +107,12 @@ function StatsScreen() {
 				setEatenFoodData(result.rows._array);
 			})
 			.catch((error) => {
-				setError(error);
+				setError(
+					new Error(
+						"SQLite Error : Unable to retrieve the eaten food.",
+						{ cause: error }
+					)
+				);
 			});
 	}, [selectedWeek, selectedDateIndex, storageLastUpdated]);
 
@@ -130,7 +145,12 @@ function StatsScreen() {
 				setWeeklyData(weeklyNutrientsSum);
 			})
 			.catch((error) => {
-				setError(error);
+				setError(
+					new Error(
+						"SQLite Error : Unable to retrieve the data for nutritions.",
+						{ cause: error }
+					)
+				);
 			});
 	}, [storageLastUpdated]);
 	return (

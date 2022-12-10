@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
+
+import colors from "../config/colors";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import ListItemSeparator from "../components/ListItemSeparator";
 import NutritionCards from "../components/NutritionCards";
 import RecentItem from "../components/RecentItem";
 import Screen from "../components/Screen";
-import colors from "../config/colors";
 import useAppState from "../hooks/useAppState";
 import {
 	selectLastKRecords,
@@ -20,10 +21,14 @@ function HomeScreen() {
 	const fetchRecentIntake = async () => {
 		try {
 			let result = await selectLastKRecords(3);
-			console.log(result.rows._array);
 			setRecentIntakeList(result.rows._array);
 		} catch (error) {
-			setError(error);
+			setError(
+				new Error(
+					"SQLite Error : Unable to retrieve recent intake from database.",
+					{ cause: error }
+				)
+			);
 		}
 	};
 	const fetchTodayNutrient = async () => {
@@ -39,7 +44,12 @@ function HomeScreen() {
 			};
 			setTodayNutrients(value);
 		} catch (error) {
-			setError(error);
+			setError(
+				new Error(
+					"SQLite Error : Unable to retrieve today nutrients from database.",
+					{ cause: error }
+				)
+			);
 		}
 	};
 	useEffect(() => {

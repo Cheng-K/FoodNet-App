@@ -1,15 +1,15 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from "@react-navigation/native";
 
-import NavigationBar from "./app/components/NavigationBar";
+import AppSplashScreen from "./app/screens/AppSplashScreen";
 import AppStateProvider from "./app/contexts/AppStateProvider";
 import HomeScreen from "./app/screens/HomeScreen";
 import ImagePickerModal from "./app/screens/ImagePickerModal";
+import NavigationBar from "./app/components/NavigationBar";
 import ResultsScreen from "./app/screens/ResultsScreen";
 import StatsScreen from "./app/screens/StatsScreen";
-import AppSplashScreen from "./app/screens/AppSplashScreen";
 import useAppState from "./app/hooks/useAppState";
 
 const RootStack = createNativeStackNavigator();

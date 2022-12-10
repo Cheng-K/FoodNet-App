@@ -11,6 +11,7 @@ npm-debug.*
 web-build/
 app/assets/model
 app/assets/test-model
+android/
 
 # macOS
 .DS_Store
