@@ -1,27 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Dropdown } from "react-native-element-dropdown";
+import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 
-import colors from "../config/colors";
 import DatePickerOption from "../components/DatePickerOption";
 import ListEmptyComponent from "../components/ListEmptyComponent";
 import ListItemSeparator from "../components/ListItemSeparator";
 import RecentItem from "../components/RecentItem";
 import Screen from "../components/Screen";
 import WeeklyNutrientsChart from "../components/WeeklyNutrientsChart";
+import colors from "../config/colors";
 import useAppState from "../hooks/useAppState";
-import {
-	dateToString,
-	generateDatesBetween,
-	generateWeeklyDatesBetween,
-	getStartOfWeek,
-} from "../utils/datetime";
 import { parseWeeklyNutrientsSum } from "../utils/charts";
 import {
 	selectEarliestDate,
 	selectNutrientsSumBetweenDates,
 	selectRecordsOnDate,
 } from "../utils/database";
+import {
+	dateToString,
+	generateDatesBetween,
+	generateWeeklyDatesBetween,
+	getStartOfWeek,
+	stringToDate,
+} from "../utils/datetime";
 
 function StatsScreen() {
 	const nutrientsDropdown = [
@@ -36,7 +37,7 @@ function StatsScreen() {
 		nutrientsDropdown[0]
 	);
 	const [datePickerDates, setDatePickerDates] = useState([]);
-	const [selectedDateIndex, setSelectedDateIndex] = useState(0);
+	const [selectedDateIndex, setSelectedDateIndex] = useState(-1);
 	const [weeklyData, setWeeklyData] = useState([]);
 	const [chartsData, setChartsData] = useState([]);
 	const [eatenFoodData, setEatenFoodData] = useState([]);
@@ -45,10 +46,11 @@ function StatsScreen() {
 	useEffect(() => {
 		selectEarliestDate()
 			.then((result) => {
-				let currentDate = Date.now();
-				let startDate = result.rows._array
-					? stringToDate(result.rows._array[0].date)
-					: currentDate;
+				let currentDate = new Date();
+				let startDate =
+					result.rows.length > 0
+						? stringToDate(result.rows._array[0].date)
+						: currentDate;
 				startDate = getStartOfWeek(startDate);
 				let range = generateWeeklyDatesBetween(startDate, currentDate);
 				range = range.map((item) => {
@@ -100,7 +102,7 @@ function StatsScreen() {
 	}, [selectedWeek]);
 
 	useEffect(() => {
-		if (datePickerDates.length === 0) return;
+		if (datePickerDates.length === 0 || selectedDateIndex === -1) return;
 		let selectedDate = datePickerDates[selectedDateIndex];
 		selectRecordsOnDate(dateToString(selectedDate))
 			.then((result) => {
