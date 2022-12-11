@@ -89,7 +89,7 @@ function HomeScreen() {
 						value={`${todayNutrients.fat?.toFixed(2)}g`}
 					/>
 				</View>
-				<View style={styles.flex_container}>
+				<View style={[styles.flex_container, styles.top_margin]}>
 					<FlatList
 						contentContainerStyle={{ flexGrow: 1 }}
 						data={recentIntakeList}
@@ -97,15 +97,7 @@ function HomeScreen() {
 							return <RecentItem item={{ ...item }} />;
 						}}
 						ListHeaderComponent={
-							<Text
-								style={[
-									styles.h1,
-									styles.h1_top_margin,
-									styles.sticky_h1,
-								]}
-							>
-								Recent Intake
-							</Text>
+							<Text style={styles.h1}>Recent Intake</Text>
 						}
 						ListEmptyComponent={ListEmptyComponent}
 						ItemSeparatorComponent={ListItemSeparator}
@@ -117,6 +109,9 @@ function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+	bottom_margin: {
+		marginBottom: 15,
+	},
 	content: {
 		flex: 1,
 		padding: 15,
@@ -129,12 +124,6 @@ const styles = StyleSheet.create({
 		color: colors.primary_black,
 		fontWeight: "500",
 		alignSelf: "center",
-	},
-	bottom_margin: {
-		marginBottom: 15,
-	},
-	h1_top_margin: {
-		marginTop: 20,
 	},
 	nutrition_panel: {
 		flexDirection: "row",
@@ -150,6 +139,9 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.secondary_cinnamon,
 		padding: 10,
 		alignItems: "center",
+	},
+	top_margin: {
+		marginTop: 20,
 	},
 });
 
