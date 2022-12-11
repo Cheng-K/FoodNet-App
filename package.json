@@ -40,7 +40,8 @@
     "react-native-screens": "~3.15.0",
     "react-native-svg": "12.3.0",
     "react-native-web": "~0.18.7",
-    "tfjs-react-native-mmkv-storage": "^1.0.1"
+    "tfjs-react-native-mmkv-storage": "^1.0.1",
+    "expo-camera": "~12.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
