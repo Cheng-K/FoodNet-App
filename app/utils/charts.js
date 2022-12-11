@@ -14,15 +14,11 @@ export function parseWeeklyNutrientsSum(rows) {
 		let dayRetrieved;
 		if (currentIndex >= rows.length) dayRetrieved = null;
 		else dayRetrieved = stringToDate(rows[currentIndex].date).getDay();
-		if (!dayRetrieved || dayRetrieved !== currentDay) {
-			calorie.push(
-				createBarData({ label: days[currentDay], value: 200 })
-			);
-			carbs.push(createBarData({ label: days[currentDay], value: 50 }));
-			protein.push(
-				createBarData({ label: days[currentDay], value: 790 })
-			);
-			fat.push(createBarData({ label: days[currentDay], value: 90 }));
+		if (dayRetrieved === null || dayRetrieved !== currentDay) {
+			calorie.push(createBarData({ label: days[currentDay], value: 0 }));
+			carbs.push(createBarData({ label: days[currentDay], value: 0 }));
+			protein.push(createBarData({ label: days[currentDay], value: 0 }));
+			fat.push(createBarData({ label: days[currentDay], value: 0 }));
 		} else {
 			calorie.push(
 				createBarData({
