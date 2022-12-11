@@ -4,11 +4,11 @@
   },
   "build": {
     "development": {
-      "developmentClient" : true,
+      "developmentClient": true,
       "distribution": "internal",
-      "env" : {
-        "APP_VARIANT" : "development"
-      }
+      "env": {
+        "APP_VARIANT": "development"
+      },
       "android": {
         "gradleCommand": ":app:assembleDebug"
       },
