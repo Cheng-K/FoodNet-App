@@ -65,8 +65,15 @@ function useMountedModel() {
 		resultTensor = resultTensor.reshape([-1]);
 		let { values, indices } = tf.topk(resultTensor, 8, true);
 		indices = indices.arraySync();
+		values = values.arraySync();
 		const ingredients = Object.keys(encodedIngredients);
-		return indices.map((i) => ingredients[i]);
+		const result = [];
+		for (let i = 0; i < values.length; i++) {
+			if (values[i] >= 0.5) {
+				result.push(ingredients[indices[i]]);
+			} else break;
+		}
+		return result;
 	};
 
 	const decodeNutrientsPrediction = (resultTensor) => {
@@ -78,7 +85,6 @@ function useMountedModel() {
 	const runInference = (imageBase64) => {
 		let imageTensor = getImageTensor(imageBase64);
 		const result = inferImage(imageTensor);
-		console.log(result);
 		setPredictedResult(result);
 		setModelIsRunning(false);
 	};
