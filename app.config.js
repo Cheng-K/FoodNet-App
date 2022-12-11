@@ -2,7 +2,7 @@ const IS_DEV = process.env.APP_VARIANT === "development";
 
 export default {
   name: IS_DEV ? "FoodNet-DEV" : "FoodNet",
-  slug: "foodnet",
+  slug: "FoodNet-App",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./app/assets/icon.png",
