@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as tf from "@tensorflow/tfjs";
 import * as tf_rn from "@tensorflow/tfjs-react-native";
+import React, { useEffect, useState } from "react";
+import { Alert } from "react-native";
 import { mmkvStorageIO } from "tfjs-react-native-mmkv-storage";
 
 import storage from "../config/storage";
@@ -34,47 +34,50 @@ function AppStateProvider({ children }) {
 		let latestModelVersion = await fetchLatestModelVersion();
 		let currentModelVersion = await getLocalModelVersion();
 		let model = null;
-		try {
-			if (latestModelVersion !== currentModelVersion) {
-				console.log(
-					`latest : ${latestModelVersion}, current : ${currentModelVersion}`
-				);
+		if (latestModelVersion !== currentModelVersion) {
+			console.log(
+				`latest : ${latestModelVersion}, current : ${currentModelVersion}`
+			);
+			try {
 				model = await downloadModel();
 				await model.save(mmkvStorageIO(storage.model_path));
 				await AsyncStorage.setItem(
 					storage.model_release,
 					latestModelVersion
 				);
+				setMountedModel(model);
+				return;
+			} catch (error) {
+				if (model) {
+					setMountedModel(model);
+					setError(
+						new Error(
+							"Unable to save the downloaded model. The app can still be used but the model have to be downloaded everytime.",
+							{ cause: error }
+						)
+					);
+					return;
+				} else if (currentModelVersion === null) {
+					setError(
+						new Error(
+							"Unable to download required model. The scanning functionality will not work. Please restart the application.",
+							{ cause: error }
+						)
+					);
+					return;
+				}
 			}
-
-			if (
-				latestModelVersion === currentModelVersion ||
-				(model === null && currentModelVersion !== null)
-			) {
-				console.log("Loading from mmkv storage");
-				model = await tf.loadLayersModel(
-					mmkvStorageIO(storage.model_path)
-				);
-			}
+		}
+		try {
+			model = await tf.loadGraphModel(mmkvStorageIO(storage.model_path));
 			setMountedModel(model);
 		} catch (error) {
-			if (latestModelVersion !== currentModelVersion && model) {
-				setMountedModel(model);
-				console.warn(error);
-				setError(
-					new Error(
-						"Unable to save the downloaded model. The app can still be used but the model have to be downloaded everytime.",
-						{ cause: error }
-					)
-				);
-			} else {
-				setError(
-					new Error(
-						"Unable to load / download required model. The scanning functionality will not work. Please restart the application.",
-						{ cause: error }
-					)
-				);
-			}
+			setError(
+				new Error(
+					"Unable to load required model. The scanning functionality will not work. Please restart the application.",
+					{ cause: error }
+				)
+			);
 		}
 	};
 	useEffect(() => {
@@ -94,11 +97,6 @@ function AppStateProvider({ children }) {
 	useEffect(() => {
 		async function prepareApp() {
 			try {
-				// await dropTable();
-				await AsyncStorage.multiRemove([
-					storage.model_release,
-					storage.model_path,
-				]);
 				await createDatabaseTables();
 				await tf.ready();
 				await prepareModel();
