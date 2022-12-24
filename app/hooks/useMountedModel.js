@@ -63,7 +63,7 @@ function useMountedModel() {
 	const decodeIngredientsPrediction = (resultTensor) => {
 		const encodedIngredients = require("../assets/encoded_ingredients.json");
 		resultTensor = resultTensor.reshape([-1]);
-		let { values, indices } = tf.topk(resultTensor, 8, true);
+		let { values, indices } = tf.topk(resultTensor, 10, true);
 		indices = indices.arraySync();
 		values = values.arraySync();
 		const ingredients = Object.keys(encodedIngredients);
