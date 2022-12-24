@@ -17,7 +17,7 @@ import { dateToString } from "../utils/datetime";
 function HomeScreen() {
 	const { storageLastUpdated, setError } = useAppState();
 	const [recentIntakeList, setRecentIntakeList] = useState([]);
-	const [todayNutrients, setTodayNutrients] = useState([]);
+	const [todayNutrients, setTodayNutrients] = useState({});
 	const fetchRecentIntake = async () => {
 		try {
 			let result = await selectLastKRecords(3);
@@ -72,21 +72,21 @@ function HomeScreen() {
 				<View style={styles.nutrition_panel}>
 					<NutritionCards
 						name="Calorie"
-						value={`${todayNutrients.calorie?.toFixed(2)}kcal`}
+						value={`${todayNutrients.calorie?.toFixed(0)}kcal`}
 						style={styles.bottom_margin}
 					/>
 					<NutritionCards
 						name="Carbohydrate"
-						value={`${todayNutrients.carbs?.toFixed(2)}g`}
+						value={`${todayNutrients.carbs?.toFixed(0)}g`}
 						style={styles.bottom_margin}
 					/>
 					<NutritionCards
 						name="Protein"
-						value={`${todayNutrients.protein?.toFixed(2)}g`}
+						value={`${todayNutrients.protein?.toFixed(0)}g`}
 					/>
 					<NutritionCards
 						name="Fat"
-						value={`${todayNutrients.fat?.toFixed(2)}g`}
+						value={`${todayNutrients.fat?.toFixed(0)}g`}
 					/>
 				</View>
 				<View style={[styles.flex_container, styles.top_margin]}>
