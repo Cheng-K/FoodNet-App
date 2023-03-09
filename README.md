@@ -70,6 +70,7 @@ This project is made up of two repositories : this & [FoodNet](https://github.co
 - [![React Native][react-native]][react-native-url]
 - [![Expo][expo]][expo-url]
 - [![NodeJS][node.js]][node.js-url]
+- [![SQLite][sqlite]][sqlite-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -215,3 +216,5 @@ Project Link: [https://github.com/Cheng-K/FoodNet-App](https://github.com/Cheng-
 [tensorflow.js-url]: https://www.tensorflow.org/js
 [node.js]: https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white
 [node.js-url]: https://nodejs.org/en/
+[sqlite]: https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white
+[sqlite-url]: https://www.sqlite.org/index.html
